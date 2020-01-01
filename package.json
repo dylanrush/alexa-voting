@@ -1,0 +1,17 @@
+{
+  "name": "alexa-voting",
+  "version": "1.0.0",
+  "description": "Alexa skill to  users when voting deadlines occur, including registration and voting day.",
+  "main": "index.js",
+  "dependencies": {
+    "ask-sdk": "^2.7.0",
+    "ask-sdk-core": "^2.7.0",
+    "zipcodes": "^8.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dylan Rush",
+  "license": "  CC-BY-SA-4.0"
+}
