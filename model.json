@@ -1,0 +1,126 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "voting reminders",
+            "intents": [
+                {
+                    "name": "AMAZON.FallbackIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": [
+                        "remove election reminders",
+                        "delete reminders",
+                        "remove reminders",
+                        "cancel",
+                        "stop telling me when to vote",
+                        "cancel notifications",
+                        "stop notifying me",
+                        "stop reminding me",
+                        "cancel election reminders",
+                        "cancel reminders"
+                    ]
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                },
+                {
+                    "name": "EnableVotingWithTime",
+                    "slots": [
+                        {
+                            "name": "time",
+                            "type": "AMAZON.TIME",
+                            "samples": [
+                                "notify me at {time}",
+                                "at {time}",
+                                "remind me at {time}",
+                                "{time}"
+                            ]
+                        }
+                    ],
+                    "samples": [
+                        "tell me to vote at {time}",
+                        "refresh reminders with {time}",
+                        "enable notifications at {time}",
+                        "set notifications for {time}",
+                        "notify me at {time}",
+                        "notify me when to vote at {time}",
+                        "remind me when the next election occurs at {time} ",
+                        "remind me when to vote at {time}",
+                        "{time}",
+                        "refresh for {time}",
+                        "remind me to vote at {time}",
+                        "set reminders at {time}",
+                        "enable reminders at {time}",
+                        "enable voting reminders at {time}",
+                        "refresh",
+                        "start",
+                        "remind me when to vote",
+                        "remind me when the next election occurs",
+                        "remind me to vote",
+                        "remind me of the next election",
+                        "remind me of the election",
+                        "refresh election reminders",
+                        "refresh reminders",
+                        "refresh voting reminders",
+                        "notify me when to vote",
+                        "notify me about the election",
+                        "enable voting notifications",
+                        "enable election notifications",
+                        "enable notifications",
+                        "remind me about the election",
+                        "Tell me when the next election is",
+                        "Remind me",
+                        "Enable",
+                        "Tell me when to vote",
+                        "Enable reminders",
+                        "Enable voting reminders"
+                    ]
+                }
+            ],
+            "types": []
+        },
+        "dialog": {
+            "intents": [
+                {
+                    "name": "EnableVotingWithTime",
+                    "confirmationRequired": false,
+                    "prompts": {},
+                    "slots": [
+                        {
+                            "name": "time",
+                            "type": "AMAZON.TIME",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.139293079011.1503904533874"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "delegationStrategy": "ALWAYS"
+        },
+        "prompts": [
+            {
+                "id": "Elicit.Slot.139293079011.1503904533874",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "OK, What time of day should I remind you?"
+                    }
+                ]
+            }
+        ]
+    }
+}
