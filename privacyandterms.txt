@@ -1,0 +1,20 @@
+Election Reminders Alexa Skill 
+
+Dylan Rush
+
+Privacy Policy
+
+The Voting Reminder skill does not collect any personally identifiable information. Postal (zip) codes of
+users are logged for testing and QA purposes. The time of day that was requested is also logged. No data
+is shared with any third parties. 
+
+Terms of Use
+
+By using the Voting Reminders skill, you agree to these terms of use.
+
+The Voting Reminders skill is for use in the United States. The author of this skill is not responsible
+for any possible damages or inaccurate data. The Voting Reminder skill is meant for convenience only.
+Please independently check all data vended by the skill. Do not use this skill if you do not agree to 
+these terms.
+
+

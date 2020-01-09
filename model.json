@@ -1,7 +1,7 @@
 {
     "interactionModel": {
         "languageModel": {
-            "invocationName": "voting reminders",
+            "invocationName": "election reminders",
             "intents": [
                 {
                     "name": "AMAZON.FallbackIntent",
@@ -10,6 +10,20 @@
                 {
                     "name": "AMAZON.CancelIntent",
                     "samples": [
+                        "remove election notifications",
+                        "stop election notifications",
+                        "stop election reminders",
+                        "delete reminder",
+                        "delete voting reminders",
+                        "delete election reminders",
+                        "delete election notifications",
+                        "delete",
+                        "remove",
+                        "stop",
+                        "remove notifications",
+                        "stop notifications",
+                        "delete all notifications",
+                        "delete notifications",
                         "remove election reminders",
                         "delete reminders",
                         "remove reminders",
@@ -24,7 +38,11 @@
                 },
                 {
                     "name": "AMAZON.HelpIntent",
-                    "samples": []
+                    "samples": [
+                        "information",
+                        "more information",
+                        "help"
+                    ]
                 },
                 {
                     "name": "AMAZON.StopIntent",
@@ -49,6 +67,10 @@
                         }
                     ],
                     "samples": [
+                        "set election reminders for {time}",
+                        "remind me fo elections at {time}",
+                        "remind me of the election at {time} ",
+                        "remind me at {time} on election day",
                         "tell me to vote at {time}",
                         "refresh reminders with {time}",
                         "enable notifications at {time}",
@@ -117,7 +139,7 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "OK, What time of day should I remind you?"
+                        "value": "OK, What time of day should I create election reminders for you?"
                     }
                 ]
             }
