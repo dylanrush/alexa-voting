@@ -63,9 +63,18 @@
                                 "remind me at {time}",
                                 "{time}"
                             ]
+                        },
+                        {
+                            "name": "state",
+                            "type": "AMAZON.US_STATE"
                         }
                     ],
                     "samples": [
+                        "set reminders for {state}",
+                        "{state}",
+                        "create election reminders for {state}",
+                        "create reminders for {state}",
+                        "remind me to vote in {state}",
                         "set election reminders for {time}",
                         "remind me of elections at {time}",
                         "remind me of the election at {time} ",
@@ -134,6 +143,13 @@
                                 "confirmation": "Confirm.Slot.945148981734.724052981132",
                                 "elicitation": "Elicit.Slot.139293079011.1503904533874"
                             }
+                        },
+                        {
+                            "name": "state",
+                            "type": "AMAZON.US_STATE",
+                            "confirmationRequired": false,
+                            "elicitationRequired": false,
+                            "prompts": {}
                         }
                     ]
                 },

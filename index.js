@@ -120,31 +120,39 @@ const EnableHandlerWithTime = {
             const {
                 deviceId
             } = requestEnvelope.context.System.device;
-            const deviceAddressServiceClient = serviceClientFactory.getDeviceAddressServiceClient();
-            const address = await deviceAddressServiceClient.getCountryAndPostalCode(deviceId);
+            
             const time = handlerInput.requestEnvelope.request.intent.slots.time.value;
             const hours = parseInt(time.split(":")[0]);
             const minutes = parseInt(time.split(":")[1]);
 
-            if (address.countryCode === null || address.postalCode === null) {
-                return responseBuilder
-                    .speak("It looks like you don't have an address set, which you can set in the companion app.")
-                    .getResponse();
-            }
-            if (address.countryCode !== "US") {
-                return responseBuilder
-                    .speak("This skill only works in the United States.")
-                    .getResponse();
+            var state;
+            if ('value' in handlerInput.requestEnvelope.request.intent.slots.state) {
+                state = handlerInput.requestEnvelope.request.intent.slots.state.value.replace('.', '');
+                for (var shortName in stateNames) {
+                    if(stateNames[shortName].toLowerCase() === state.toLowerCase()) {
+                        state = shortName;
+                        break;
+                    }
+                }
+            } else {
+                const deviceAddressServiceClient = serviceClientFactory.getDeviceAddressServiceClient();
+                const address = await deviceAddressServiceClient.getCountryAndPostalCode(deviceId);
+                if (address.countryCode === null || address.postalCode === null || address.countryCode !== "US") {
+                    return responseBuilder
+                        .speak("For which US state would you like to receive reminders?")
+                        .addElicitSlotDirective('state')
+                        .getResponse();
+                }
+                state = zipcodes.lookup(address.postalCode).state;
             }
 
-            const state = zipcodes.lookup(address.postalCode).state;
             const longName = stateNames[state];
-            speechText = `Great! I've scheduled voting reminders for you for the state of ${longName} at ${time}. You can see or disable these reminders in the Alexa app. Don't forget to check your registration regularly.`;
-
+            var speechText;
             if (state in deadlines) {
                 deadlinesToUse = deadlines[state];
+                speechText = `Great! I've scheduled election reminders for you for the state of ${longName} at ${time}. You can see or disable these reminders in the Alexa app. Don't forget to check your registration regularly.`;
             } else {
-                const speechText = `I don't have deadline information for the state of ${state}, but I added a reminder for Super Tuesday.`;
+                const speechText = `I don't have information for the state of ${state}, but I added a reminder for the national general election on November Third at ${time}.`;
                 deadlinesToUse = defaultDeadlines;
             }
             if ("message" in deadlinesToUse) {
@@ -284,8 +292,6 @@ const EnableVotingConfirmation = {
                 .withShouldEndSession(true)
                 .getResponse();
         }
-
-        
     }
 }
 
