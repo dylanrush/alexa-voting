@@ -19,7 +19,6 @@
                         "delete election notifications",
                         "delete",
                         "remove",
-                        "stop",
                         "remove notifications",
                         "stop notifications",
                         "delete all notifications",
@@ -68,7 +67,7 @@
                     ],
                     "samples": [
                         "set election reminders for {time}",
-                        "remind me fo elections at {time}",
+                        "remind me of elections at {time}",
                         "remind me of the election at {time} ",
                         "remind me at {time} on election day",
                         "tell me to vote at {time}",
@@ -108,6 +107,13 @@
                         "Enable reminders",
                         "Enable voting reminders"
                     ]
+                },
+                {
+                    "name": "EnableVotingConfirmation",
+                    "slots": [],
+                    "samples": [
+                        "enable reminders with confirmation"
+                    ]
                 }
             ],
             "types": []
@@ -122,13 +128,22 @@
                         {
                             "name": "time",
                             "type": "AMAZON.TIME",
-                            "confirmationRequired": false,
+                            "confirmationRequired": true,
                             "elicitationRequired": true,
                             "prompts": {
+                                "confirmation": "Confirm.Slot.945148981734.724052981132",
                                 "elicitation": "Elicit.Slot.139293079011.1503904533874"
                             }
                         }
                     ]
+                },
+                {
+                    "name": "EnableVotingConfirmation",
+                    "confirmationRequired": true,
+                    "prompts": {
+                        "confirmation": "Confirm.Intent.820870960761"
+                    },
+                    "slots": []
                 }
             ],
             "delegationStrategy": "ALWAYS"
@@ -139,7 +154,25 @@
                 "variations": [
                     {
                         "type": "PlainText",
-                        "value": "OK, What time of day should I create election reminders for you?"
+                        "value": "What time of day should I create election reminders for you?"
+                    }
+                ]
+            },
+            {
+                "id": "Confirm.Slot.945148981734.724052981132",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Create election day reminders for {time} , right?"
+                    }
+                ]
+            },
+            {
+                "id": "Confirm.Intent.820870960761",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Would you like to create election reminders?"
                     }
                 ]
             }

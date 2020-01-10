@@ -86,7 +86,6 @@ const HandleLaunchRequest = {
     async handle(handlerInput) {
         return handlerInput.responseBuilder
             .speak("OK, what time of day would you like to receive election day reminders?")
-            .reprompt("Sorry, what time of day would you like to receive reminders?")
             .addElicitSlotDirective('time', {
                     name: 'EnableVotingWithTime',
                     confirmationStatus: 'NONE',
@@ -112,7 +111,7 @@ const EnableHandlerWithTime = {
             requestEnvelope.context.System.user.permissions.consentToken;
         if (!consentToken) {
             return responseBuilder
-                .speak('Please enable Reminder and Location permissions in the Amazon Alexa app.')
+                .speak('Please enable Reminder and Location permissions in the Amazon Alexa app. These permissions are required to create reminders for you that are specific to your location.')
                 .withAskForPermissionsConsentCard(['alexa::alerts:reminders:skill:readwrite', 'read::alexa:device:all:address:country_and_postal_code'])
                 .getResponse();
         }
@@ -140,7 +139,7 @@ const EnableHandlerWithTime = {
 
             const state = zipcodes.lookup(address.postalCode).state;
             const longName = stateNames[state];
-            speechText = `Great! I've scheduled voting reminders for you for the state of ${longName}. You can see or disable these reminders in the Alexa app. Don't forget to check your registration regularly.`;
+            speechText = `Great! I've scheduled voting reminders for you for the state of ${longName} at ${time}. You can see or disable these reminders in the Alexa app. Don't forget to check your registration regularly.`;
 
             if (state in deadlines) {
                 deadlinesToUse = deadlines[state];
@@ -212,8 +211,7 @@ async function clearAllReminders(reminderManagementServiceClient) {
 const DisableHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest' &&
-            (Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.CancelIntent'
-                || Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.StopIntent');
+            Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.CancelIntent';
     },
     async handle(handlerInput) {
         const {
@@ -229,11 +227,18 @@ const DisableHandler = {
                 .withAskForPermissionsConsentCard(['alexa::alerts:reminders:skill:readwrite', 'read::alexa:device:all:address:country_and_postal_code'])
                 .getResponse();
         }
-        const reminderManagementServiceClient = serviceClientFactory.getReminderManagementServiceClient();
-        await clearAllReminders(reminderManagementServiceClient);
-
+        
+        var speak = "OK, I deleted all election reminders.";
+        try {
+            const reminderManagementServiceClient = serviceClientFactory.getReminderManagementServiceClient();
+            await clearAllReminders(reminderManagementServiceClient);
+        } catch(err) {
+            speak = "There was an error deleting your reminders. You can delete them in the Alexa app.";
+            console.log("==== ERROR ======");
+            console.log(err);
+        }
         return handlerInput.responseBuilder
-            .speak("OK, I deleted all reminders to vote. To recreate them, just say \"Alexa, start Election Reminders\".")
+            .speak(speak)
             .getResponse();
     }
 }
@@ -244,21 +249,55 @@ const HelpIntentHandler = {
             Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.HelpIntent';
     },
     async handle(handlerInput) {
+        const helpMessage = "The Election Reminders skill can create reminders for you on registration and election deadlines for your state. Would you like to continue?";
         return handlerInput.responseBuilder
-            .speak("The Election Reminders skill can create reminders for you on registration and election deadlines for your state. " 
-                + "Simply say, \"Alexa, start Election Reminders\" to get started.")
-            .withShouldEndSession(true)
+            .speak(helpMessage)
+            .addConfirmIntentDirective({
+                    name: 'EnableVotingConfirmation',
+                    confirmationStatus: 'NONE',
+                    slots: {}
+                 })
             .getResponse();
+    }
+}
+
+const EnableVotingConfirmation = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest' &&
+            Alexa.getIntentName(handlerInput.requestEnvelope) === 'EnableVotingConfirmation';
+    },
+    async handle(handlerInput) {
+        const {
+            requestEnvelope,
+            serviceClientFactory,
+            responseBuilder
+        } = handlerInput;
+        if (requestEnvelope.request.intent.confirmationStatus === 'CONFIRMED') {
+            return handlerInput.responseBuilder
+                .addDelegateDirective({
+                    name: 'EnableVotingWithTime',
+                    confirmationStatus: 'NONE',
+                    slots: {}})
+                .getResponse();
+        } else {
+            return handlerInput.responseBuilder
+                .withShouldEndSession(true)
+                .getResponse();
+        }
+
+        
     }
 }
 
 const EndSessionHandler = {
     canHandle(handlerInput) {
-        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'SessionEndedRequest';
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'SessionEndedRequest'
+        || (Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.StopIntent');
     },
     handle(handlerInput) {
         return handlerInput.responseBuilder
-            .speak("OK")
+            .withShouldEndSession(true)
             .getResponse();
     }
 }
@@ -306,7 +345,8 @@ exports.handler = Alexa.SkillBuilders.custom()
         HandleLaunchRequest,
         DisableHandler,
         EndSessionHandler,
-        HelpIntentHandler)
+        HelpIntentHandler,
+        EnableVotingConfirmation)
     .addErrorHandlers(GlobalErrorHandler)
     .addRequestInterceptors(LogRequestInterceptor)
     .addResponseInterceptors(LogResponseInterceptor)
