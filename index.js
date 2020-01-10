@@ -95,6 +95,22 @@ const HandleLaunchRequest = {
     }
 };
 
+function askForPermission(responseBuilder, create) {
+    var message;
+    if (create === true) {
+        message = "Please enable permissions in the Alexa app. Permissions to read and write "
+        + "reminders are required. This skill cannot see your personal reminders, only ones created by the skill. "
+        + "Permission to see your location is optional and limited to postal code. Location permissions are used "
+        + "create reminders that are specific to your state.";
+    } else {
+        message = 'This skill does not have permissions to delete reminders. You can add permission or manually delete reminders through the Alexa app.';
+    }
+    return responseBuilder
+        .speak(message)
+        .withAskForPermissionsConsentCard(['alexa::alerts:reminders:skill:readwrite', 'read::alexa:device:all:address:country_and_postal_code'])
+        .getResponse();
+}
+
 const EnableHandlerWithTime = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest' &&
@@ -110,10 +126,7 @@ const EnableHandlerWithTime = {
         const consentToken = requestEnvelope.context.System.user.permissions &&
             requestEnvelope.context.System.user.permissions.consentToken;
         if (!consentToken) {
-            return responseBuilder
-                .speak('Please enable Reminder and Location permissions in the Amazon Alexa app. These permissions are required to create reminders for you that are specific to your location.')
-                .withAskForPermissionsConsentCard(['alexa::alerts:reminders:skill:readwrite', 'read::alexa:device:all:address:country_and_postal_code'])
-                .getResponse();
+            return askForPermission(responseBuilder, true);
         }
 
         try {
@@ -135,15 +148,20 @@ const EnableHandlerWithTime = {
                     }
                 }
             } else {
-                const deviceAddressServiceClient = serviceClientFactory.getDeviceAddressServiceClient();
-                const address = await deviceAddressServiceClient.getCountryAndPostalCode(deviceId);
-                if (address.countryCode === null || address.postalCode === null || address.countryCode !== "US") {
+                try {
+                    const deviceAddressServiceClient = serviceClientFactory.getDeviceAddressServiceClient();
+                    const address = await deviceAddressServiceClient.getCountryAndPostalCode(deviceId);
+                    if (address.countryCode === null || address.postalCode === null || address.countryCode !== "US") {
+                        throw "Could not find postal code";
+                    }
+                    state = zipcodes.lookup(address.postalCode).state;
+                } catch (err) {
                     return responseBuilder
                         .speak("For which US state would you like to receive reminders?")
                         .addElicitSlotDirective('state')
                         .getResponse();
                 }
-                state = zipcodes.lookup(address.postalCode).state;
+                
             }
 
             const longName = stateNames[state];
@@ -192,10 +210,15 @@ const EnableHandlerWithTime = {
                 .getResponse();
 
         } catch (error) {
-            console.error(error);
-            return responseBuilder
-                .speak('Uh Oh. Looks like something went wrong.')
-                .getResponse();
+            console.log("JSONified error: "+JSON.stringify(error));
+            if ('statusCode' in error && error.statusCode == 401) {
+                return askForPermission(responseBuilder, true);
+            } else {
+                console.error(error)
+                return responseBuilder
+                    .speak('Uh Oh. Looks like something went wrong.')
+                    .getResponse();
+            }
         }
     }
 };
@@ -230,20 +253,20 @@ const DisableHandler = {
         const consentToken = requestEnvelope.context.System.user.permissions &&
             requestEnvelope.context.System.user.permissions.consentToken;
         if (!consentToken) {
-            return responseBuilder
-                .speak('This skill does not have permissions to delete reminders. You can add permission or manually delete reminders through the Alexa app.')
-                .withAskForPermissionsConsentCard(['alexa::alerts:reminders:skill:readwrite', 'read::alexa:device:all:address:country_and_postal_code'])
-                .getResponse();
+            return askForPermission(responseBuilder, false);
         }
         
         var speak = "OK, I deleted all election reminders.";
         try {
             const reminderManagementServiceClient = serviceClientFactory.getReminderManagementServiceClient();
             await clearAllReminders(reminderManagementServiceClient);
-        } catch(err) {
+        } catch(error) {
+            if ('statusCode' in error && error.statusCode == 401) {
+                return askForPermission(responseBuilder, false);
+            }
             speak = "There was an error deleting your reminders. You can delete them in the Alexa app.";
             console.log("==== ERROR ======");
-            console.log(err);
+            console.error(error);
         }
         return handlerInput.responseBuilder
             .speak(speak)
